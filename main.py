@@ -1,14 +1,28 @@
 import machine
 import utime
 
-# Configuración del UART
-uart = machine.UART(0, baudrate=9600)  # Usa UART0, cambia el baudrate según necesites
+class PicoUART:
+    def __init__(self, baudrate=9600):
+        self.uart = machine.UART(0, baudrate=baudrate)
+    
+    def send_greeting(self):
+        message = "Hola desde la Pico\n"
+        self.uart.write(message)
+        print(message.strip())  # Para depuración
 
-print("Iniciando envío de mensajes...")  # Confirmación inicial
+    def listen_for_data(self):
+        if self.uart.any():
+            received_data = self.uart.read().decode('utf-8').strip()
+            print(f"Dato recibido: {received_data}")  # Confirmación de la recepción para depuración
+            response_message = f"Dato recibido: {received_data}\n"
+            self.uart.write(response_message.encode('utf-8'))  # Asegúrate de codificar la respuesta
 
-while True:
-    # Enviar "Hola desde la Pico" cada 5 segundos
-    mensaje = "Hola desde la Pico\n"
-    uart.write(mensaje)
-    print("Enviado:", mensaje)  # Imprimir el mensaje enviado
-    utime.sleep(5)
+    def run(self):
+        while True:
+            self.send_greeting()
+            self.listen_for_data()
+            utime.sleep(5)
+
+if __name__ == "__main__":
+    uart_comm = PicoUART()
+    uart_comm.run()
